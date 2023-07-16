@@ -182,17 +182,6 @@ init_component :: proc($T: typeid) {
 	ecs.components_num += 1
 }
 
-get_components :: proc(entity: EntityID) -> []typeid {
-	entity := ecs.entities[get_entity_index(entity)]
-	ret := [dynamic]typeid{}
-	for component_index in 0 ..< MAX_COMPONENTS {
-		if component_index in entity.mask {
-			append(&ret, ecs.components[component_index].type)
-		}
-	}
-	return ret[:]
-}
-
 EntitiesIter :: struct {
 	index:               EntityIndex,
 	required_components: ComponentsBitSet,
