@@ -226,3 +226,8 @@ uninit :: proc() {
 	delete(ecs.free_entities)
 	delete(ecs.component_list)
 }
+
+set_component :: proc(e: EntityID, component: $T) {
+	c, _ := get_component(e, T)
+	c^ = component
+}
