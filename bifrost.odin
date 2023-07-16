@@ -65,10 +65,10 @@ get_component :: proc(entity: EntityID, $T: typeid) -> (component: ^T, error: Er
 	return ptr, nil
 }
 
-has_component :: proc(entity: EntityID, Component: typeid) -> (has_component: bool, error: Error) {
-	if ecs.entities[get_entity_index(entity)].id != entity do return false, .InvalidEntity
+has_component :: proc(entity: EntityID, Component: typeid) -> bool {
+	if ecs.entities[get_entity_index(entity)].id != entity do return false
 	entity := ecs.entities[get_entity_index(entity)]
-	return ecs.component_list[Component] in entity.mask, nil
+	return ecs.component_list[Component] in entity.mask
 }
 
 has_components :: proc(
@@ -80,8 +80,7 @@ has_components :: proc(
 ) {
 	if ecs.entities[get_entity_index(entity)].id != entity do return false, .InvalidEntity
 	for c in components {
-		has_c, err := has_component(entity, c)
-		if err != nil do return false, err
+		has_c := has_component(entity, c)
 		if !has_c do return false, nil
 	}
 	return true, nil
