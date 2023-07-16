@@ -51,14 +51,7 @@ get_component_pool :: proc($T: typeid) -> ComponentPool {
 	return ecs.components[ecs.component_list[T]]
 }
 
-get_component :: proc(
-	entity: EntityID,
-	$T: typeid,
-	loc := #caller_location,
-) -> (
-	component: ^T,
-	error: Error,
-) {
+get_component :: proc(entity: EntityID, $T: typeid) -> (component: ^T, error: Error) {
 	if ecs.entities[get_entity_index(entity)].id != entity {
 		fmt.println(loc)
 		return nil, .InvalidEntity
@@ -79,11 +72,7 @@ has_component :: proc(entity: EntityID, Component: typeid) -> (has_component: bo
 	return ecs.component_list[Component] in entity.mask, nil
 }
 
-has_components :: proc {
-	has_components_varargs,
-}
-
-has_components_varargs :: proc(
+has_components :: proc(
 	entity: EntityID,
 	components: ..typeid,
 ) -> (
@@ -99,8 +88,9 @@ has_components_varargs :: proc(
 	return true, nil
 }
 
-get_component_id :: proc(T: typeid) -> int {
-	return ecs.component_list[T]
+get_component_id :: proc(T: typeid) -> (int, Error) {
+	if !(T in ecs.component_list) do return -1, .InvalidComponent
+	return ecs.component_list[T], nil
 }
 
 add_component :: proc(entity: EntityID, component: $T, location := #caller_location) -> Error {
@@ -188,16 +178,20 @@ EntitiesIter :: struct {
 }
 
 make_entity_iter :: proc {
-	make_entity_iter_bit,
+	make_entity_iter_var,
 	make_entity_iter_all,
 }
 
-make_entity_iter_bit :: proc(components: []typeid) -> EntitiesIter {
-	bits := ComponentsBitSet{}
-	for c in components {
-		bits += {get_component_id(c)}
+make_entity_iter_var :: proc(components: ..typeid) -> (iter: EntitiesIter, error: Error) {
+	for component in components {
+		id, err := get_component_id(component)
+		if err != nil {
+			error = .InvalidComponent
+			return
+		}
+		iter.required_components += {id}
 	}
-	return EntitiesIter{required_components = bits}
+	return
 }
 
 make_entity_iter_all :: proc() -> EntitiesIter {
