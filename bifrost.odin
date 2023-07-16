@@ -99,7 +99,8 @@ add_component :: proc(entity: EntityID, component: $T, location := #caller_locat
 	component_id, component_exists := ecs.component_list[T]
 	assert(component_exists, fmt.tprint("tried to add component that did not exist\n", location))
 	e.mask += {component_id}
-	c_ptr := get_component(entity, T)
+	c_ptr, component_err := get_component(entity, T)
+	if component_err != nil do return component_err
 	c_ptr^ = component
 	return nil
 }
